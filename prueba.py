@@ -1,40 +1,45 @@
 """
-Programa que combina GLFW (para la ventana/OpenGL 3.3 Compatibility) y Pygame (para el sonido).
-Muestra una ventana y reproduce el sonido al presionar la tecla ESPACIO.
+GLFW (OpenGL 3.3 Compatibility) y Pygame (Sonido).
+Reproduce música de fondo continua y un efecto de sonido al presionar ESPACIO.
 
-Ruta del sonido: ~/Programacion/Python/juegoPython/sounds/disparo1.mp3
+Rutas de sonido:
+- Efecto (disparo): ~/Programacion/Python/juegoPython/sounds/disparo1.mp3
+- Ambiente (musica): ~/Programacion/Python/juegoPython/sounds/ambiente.mp3
 """
 
 import glfw
+from OpenGL.GL import *
 import pygame
 import os
 
-# --- Configuración de Archivos y Directorios ---
 
-RUTA_AMBIENTE = "/home/ariel/Programacion/Python/juegoPython/sounds/ambiente1.mp3"
+# Rutas para el efecto de sonido y la música de ambiente
 RUTA_EFECTO = "/home/ariel/Programacion/Python/juegoPython/sounds/disparo1.mp3"
+RUTA_AMBIENTE = "/home/ariel/Programacion/Python/juegoPython/sounds/ambiente1.mp3"
 
-# Variable global para almacenar el objeto de sonido de Pygame
+# Variables globales para el sonido
 sonido_disparo = None
+# La música se maneja con pygame.mixer.music, no necesita una variable global de Sound object.
 
 
 def inicializar_pygame_sonido():
-    """
-    Inicializa el módulo de mezclador de Pygame y carga el efecto de sonido.
-    """
+    
+    # Inicializa el módulo de mezclador de Pygame, carga el efecto de sonido (Sound) 
+    # y carga/reproduce la música de ambiente (mixer.music).
+    
     global sonido_disparo
     try:
-        # Inicializar solo el módulo de mezclador (mixer) de Pygame
+        # Inicializar Pygame Mixer (esencial para ambos tipos de audio)
         pygame.mixer.init(44100, -16, 2, 2048)
-        print(f"Buscando sonido en: {RUTA_EFECTO}")
         
+        # --- 1. CARGA DEL EFECTO DE SONIDO (gestionado por Sound/Canales) ---
+        print(f"Buscando efecto de sonido en: {RUTA_EFECTO}")
         if not os.path.exists(RUTA_EFECTO):
-            print(f"ERROR: Archivo de sonido no encontrado en la ruta: {RUTA_SONIDO}")
-            print(f"Asegúrate de que 'disparo1.mp3' esté en la carpeta 'sounds'.")
+            print(f"ERROR: Efecto de sonido no encontrado en: {RUTA_EFECTO}")
             return
         sonido_disparo = pygame.mixer.Sound(RUTA_EFECTO)
-
-        # --- 2. CARGA Y REPRODUCCIÓN DE MÚSICA DE AMBIENTE (gestionado por mixer.music) --- 
+        
+        # --- 2. CARGA Y REPRODUCCIÓN DE MÚSICA DE AMBIENTE (gestionado por mixer.music) ---
         print(f"Buscando música de ambiente en: {RUTA_AMBIENTE}")
         if not os.path.exists(RUTA_AMBIENTE):
             print(f"ERROR: Música de ambiente no encontrada en: {RUTA_AMBIENTE}")
@@ -44,26 +49,29 @@ def inicializar_pygame_sonido():
             # Reproducir la música en bucle infinito (-1)
             pygame.mixer.music.play(-1)
             print("Música de ambiente iniciada en bucle.")
-    
-        print("Módulo de sonido de Pygame inicializado y sonido cargado.")
+            
+        print("Módulo de sonido de Pygame inicializado y sonidos cargados.")
         
     except pygame.error as e:
         print(f"Error al inicializar Pygame Mixer o cargar el sonido: {e}")
         print("Verifica el archivo de sonido y la instalación de Pygame/SDL.")
 
-def iniciar_ventana():
 
+def iniciar_ventana():
+    """
+    Inicializa una ventana GLFW/OpenGL solicitando el Perfil de Compatibilidad 3.3.
+    Esto permite usar glBegin/glEnd en sistemas modernos.
+    :return: La ventana GLFW.
+    """
     if not glfw.init():
         raise Exception("No se pudo iniciar GLFW")
     
-    # Solicitamos una versión moderna (3.3)
+    # Solicitamos OpenGL 3.3 y Perfil de Compatibilidad para glBegin/glEnd.
     glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
     glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
-
-    # Forzamos el Perfil de Compatibilidad. 
     glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_COMPAT_PROFILE)
     
-    ventana = glfw.create_window(800, 600, "OpenGL 3.3 Compatibility + Sonido Pygame", None, None)
+    ventana = glfw.create_window(800, 600, "OpenGL 3.3 Compatibility + Música y Efecto de Sonido", None, None)
     
     if not ventana:
         glfw.terminate()
@@ -75,7 +83,7 @@ def iniciar_ventana():
 
 def key_callback(window, key, scancode, action, mods):
     """
-    Función de callback de teclado que reproduce el sonido al presionar ESPACIO.
+    Función de callback de teclado que reproduce el efecto de sonido al presionar ESPACIO.
     """
     global sonido_disparo
     
@@ -83,10 +91,11 @@ def key_callback(window, key, scancode, action, mods):
     if action == glfw.PRESS or action == glfw.REPEAT:
         
         if key == glfw.KEY_SPACE:
-            print("Tecla ESPACIO presionada. Reproduciendo sonido...")
+            print("Tecla ESPACIO presionada. Reproduciendo efecto de sonido...")
             
             if sonido_disparo:
-                # Reproducir el sonido
+                # Reproducir el sonido. Como es un objeto Sound, usa un canal 
+                # separado y NO interrumpe la música.
                 sonido_disparo.play()
             else:
                 print("Advertencia: El sonido no pudo ser cargado o inicializado.")
@@ -104,6 +113,7 @@ def dibujar_escena():
     glClearColor(0.0, 0.0, 0.0, 1.0)
     glClear(GL_COLOR_BUFFER_BIT)
     
+    # Dibujar un cuadrado blanco simple en el centro usando la pipeline de función fija
     glBegin(GL_QUADS)
     glColor3f(1.0, 1.0, 1.0)
     glVertex2f(-0.2, 0.2)
@@ -115,25 +125,26 @@ def dibujar_escena():
 
 def programa_principal():
     
-    # Inicializar Pygame Mixer y cargar el sonido
+    # 1. Inicializar Pygame Mixer y cargar los sonidos
     inicializar_pygame_sonido()
     
-    # Inicializar GLFW y crear la ventana
+    # 2. Inicializar GLFW y crear la ventana
     try:
         ventana = iniciar_ventana()
     except Exception as e:
         print(f"Error fatal al iniciar la ventana: {e}")
+        # Detener Pygame si la ventana falla
         pygame.mixer.quit()
         return
 
-    # Registrar la función de callback de teclado
+    # 3. Registrar la función de callback de teclado
     glfw.set_key_callback(ventana, key_callback)
     
     # Bucle principal de renderizado
     while not glfw.window_should_close(ventana):
         
         # Dibujar la escena
-        # dibujar_escena()
+        dibujar_escena()
         
         # Intercambiar búferes para mostrar el resultado
         glfw.swap_buffers(ventana)
@@ -141,11 +152,8 @@ def programa_principal():
         # Procesar eventos (teclado, ratón, etc.)
         glfw.poll_events()
         
-    # Terminar GLFW y Pygame Mixer
+    # 4. Terminar: Detener la música, terminar Pygame Mixer y GLFW
+    pygame.mixer.music.stop() # <-- NUEVO
     pygame.mixer.quit()
     glfw.terminate()
 
-
-# Llamado al programa principal de control
-if __name__ == "__main__":
-    programa_principal()
