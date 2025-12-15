@@ -123,13 +123,19 @@ def key_callback(window, key, scancode, action, mods):
 	# =======================
 def cargar_mc():
     # Cargar fondo
-    fondo = cargar_textura("/home/ariel/Programacion/Python/u4/D03_RellenoPoligonosTexturas/PNGs/FondoSprite02.bmp")
+
+    ruta_fondo = []
+    for i in range(1, 41):
+        ruta = "~/Programacion/Python/juegoPython/images/cielo/" + {i} + ".png"
+        ruta_fondo[i] = ruta
+        fondo = cargar_textura(ruta_fondo[i])
 
     # Cargar 5 sprites (animación)	
-    rutas = [
-	    "/home/ariel/Programacion/Python/juegoPython/pngs/" + {i} + ".png",
-	]
-	sprites = [cargar_textura(r) for r in rutas]
+    # rutas = [
+	#     "/home/ariel/Programacion/Python/juegoPython/pngs/" + {i} + ".png",
+	# ]
+
+	sprites = [cargar_textura(r) for r in ruta_fondo]
 	
 	# Activar texturas
 	glEnable(GL_TEXTURE_2D)
@@ -138,8 +144,6 @@ def cargar_mc():
 	# Activar transparencia en PNGs
 	glEnable(GL_BLEND)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-	
-	
 	
 	# Variables del sprite
 	frame = 0
@@ -150,19 +154,6 @@ def cargar_mc():
 	x = 0.0
 	y = 0.0
 	velocidad = 0.03
-
-def inicializa_pygame():
-    for i in range(1, 41):
-        ruta = "~/Programacion/Python/juegoPython/images/cielo" + {i} + ".png"
-        ruta_fondo[i] = ruta
-        
-        try:
-            pygame.mixer.init(44100, -16, 2, 2048)
-            
-            if not os.path.exists(ruta_fondo[i]):
-                print(f"Error: Archivo de sonido no encontrado en la ruta: {ruta_fondo}")
-                return
-            fondo_actual = pygame.mixer 
 
 def dibujar_escena():
     """
