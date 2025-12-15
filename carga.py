@@ -1,12 +1,5 @@
 # Este sera una libreria de carga de imagenes y sonidos
 
-"""
-Programa que combina GLFW (para la ventana/OpenGL 3.3 Compatibility) y Pygame (para el sonido).
-Muestra una ventana y reproduce el sonido al presionar la tecla ESPACIO.
-
-Ruta del sonido: ~/Programacion/Python/juegoPython/sounds/disparo1.mp3
-"""
-
 import glfw
 import pygame
 import os
@@ -20,45 +13,7 @@ RUTA_RECARGA1 = "/home/ariel/Programacion/Python/juegoPython/sounds/recarga1.mp3
 # Variable global para almacenar el objeto de sonido de Pygame
 sonido_disparo = None
 sonido_recarga = None
-
-def inicializar_pygame_sonido():
-    """
-    Inicializa el módulo de mezclador de Pygame y carga el efecto de sonido.
-    """
-    global sonido_disparo, sonido_recarga
-    try:
-        # Inicializar solo el módulo de mezclador (mixer) de Pygame
-        pygame.mixer.init(44100, -16, 2, 2048)
-        print(f"Buscando sonido en: {RUTA_DISPARO1}")
-
-        if not os.path.exists(RUTA_DISPARO1):
-            print(f"ERROR: Archivo de sonido no encontrado en la ruta: {RUTA_DISPARO1}")
-            print(f"Asegúrate de que 'disparo1.mp3' esté en la carpeta 'sounds'.")
-            return
-        sonido_disparo = pygame.mixer.Sound(RUTA_DISPARO1)
-
-        if not os.path.exists(RUTA_RECARGA1):
-            print(f"ERROR: Archivo de sonido no encontrado en la ruta: {RUTA_RECARGA1}")
-            print(f"Asegúrate de que 'recarga1.mp3' esté en la carpeta 'sounds'.")
-            return
-        sonido_recarga = pygame.mixer.Sound(RUTA_RECARGA1)
-
-        # --- 2. CARGA Y REPRODUCCIÓN DE MÚSICA DE AMBIENTE1 (gestionado por mixer.music) ---
-        print(f"Buscando música de ambiente en: {RUTA_AMBIENTE1}")
-        if not os.path.exists(RUTA_AMBIENTE1):
-            print(f"ERROR: Música de ambiente no encontrada en: {RUTA_AMBIENTE1}")
-        else:
-            # Cargar la música
-            pygame.mixer.music.load(RUTA_AMBIENTE1)
-            # Reproducir la música en bucle infinito (-1)
-            pygame.mixer.music.play(-1)
-            print("Música de ambiente iniciada en bucle.")
-
-        print("Módulo de sonido de Pygame inicializado y sonido cargado.")
-
-    except pygame.error as e:
-        print(f"Error al inicializar Pygame Mixer o cargar el sonido: {e}")
-        print("Verifica el archivo de sonido y la instalación de Pygame/SDL.")
+va_hacia_la_derecha = False
 
 def inicializar_pygame_sonido():
     """
@@ -144,9 +99,70 @@ def key_callback(window, key, scancode, action, mods):
         else:
             print("Advertencia: El sonido no pudo ser cargado o inicializado.")
 
+        # Movimiento con teclas
+        if key == glfw.PRESS:
+            y += velocidad
+
+        if key == glfw.PRESS:
+            y -= velocidad
+
+        if key == glfw.PRESS:
+            x -= velocidad
+
+        if key == glfw.PRESS:
+            x += velocidad
+
         if key == glfw.KEY_ESCAPE:
             print("Escape presionado - Cerrando ventana")
             glfw.set_window_should_close(window, True)
+
+        # Dibujar el sprite
+        glBindTexture(GL_TEXTURE_2D, sprites[frame])
+        dibujar_poligono(x, y, 0.15, 0.15)
+
+	# =======================
+def cargar_mc():
+    # Cargar fondo
+    fondo = cargar_textura("/home/ariel/Programacion/Python/u4/D03_RellenoPoligonosTexturas/PNGs/FondoSprite02.bmp")
+
+    # Cargar 5 sprites (animación)	
+    rutas = [
+	    "/home/ariel/Programacion/Python/juegoPython/pngs/" + {i} + ".png",
+	]
+	sprites = [cargar_textura(r) for r in rutas]
+	
+	# Activar texturas
+	glEnable(GL_TEXTURE_2D)
+	
+	
+	# Activar transparencia en PNGs
+	glEnable(GL_BLEND)
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+	
+	
+	
+	# Variables del sprite
+	frame = 0
+	velocidad_anim = 0.12
+	ultimo_tiempo = time.time()
+	
+	# Posición del sprite
+	x = 0.0
+	y = 0.0
+	velocidad = 0.03
+
+def inicializa_pygame():
+    for i in range(1, 41):
+        ruta = "~/Programacion/Python/juegoPython/images/cielo" + {i} + ".png"
+        ruta_fondo[i] = ruta
+        
+        try:
+            pygame.mixer.init(44100, -16, 2, 2048)
+            
+            if not os.path.exists(ruta_fondo[i]):
+                print(f"Error: Archivo de sonido no encontrado en la ruta: {ruta_fondo}")
+                return
+            fondo_actual = pygame.mixer 
 
 def dibujar_escena():
     """
@@ -163,6 +179,31 @@ def dibujar_escena():
     glVertex2f( 0.2, -0.2)
     glVertex2f(-0.2, -0.2)
     glEnd()
+
+def dibujar_poligono(x, y, w, h):
+    glBegin(GL_QUADS)
+    glTexCoord2f(0, 0); glVertex2f(x - w, y - h)
+    glTexCoord2f(1, 0); glVertex2f(x + w, y - h)
+    glTexCoord2f(1, 1); glVertex2f(x + w, y + h)
+    glTexCoord2f(0, 1); glVertex2f(x - w, y + h)
+    glEnd()
+
+# Función para cargar textura
+def cargar_textura(ruta):
+    imagen = Image.open(ruta).transpose(Image.FLIP_TOP_BOTTOM)
+    img_data = imagen.convert("RGBA").tobytes()
+    width, height = imagen.size
+
+    tex_id = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D, tex_id)
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, img_data)
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+
+    return tex_id
 
 def programa_principal():
 
