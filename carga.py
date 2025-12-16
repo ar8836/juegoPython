@@ -3,8 +3,14 @@
 import glfw
 import pygame
 import os
+import time
+from PIL import Image 
+from OpenGL.GL import *
 
-# --- Configuración de Archivos y Directorios ---
+# =============== Directorios ===================
+# Cambiar el directorio base a "/home/javier/Documentos/Programas/Python/"
+
+RUTA_BASE = "/home/ariel/Programacion/Python/juegoPython"
 # Sonidos funcionales pero solo son temporales, despues los cambiare por otros
 RUTA_AMBIENTE1 = "/home/ariel/Programacion/Python/juegoPython/sounds/ambiente1.mp3"
 RUTA_DISPARO1 = "/home/ariel/Programacion/Python/juegoPython/sounds/disparo1.mp3"
@@ -100,297 +106,28 @@ def key_callback(window, key, scancode, action, mods):
         dibujar_poligono(x, y, 0.15, 0.15)
 
 # ======================= CARGAR FONDOS ==========================
-def cargar_fondo():
-    # Cargar fondo
 
-    ruta_fondo = []
-    for i in range(1, 41):
-        ruta = "~/Programacion/Python/juegoPython/images/cielo/" + {i} + ".png"
-        ruta_fondo[i] = ruta
-        fondo = cargar_textura(ruta_fondo[i])
-    # Hay 40 imagenes en .../images/cielo que se llaman 1.png, 2.png, 3.png y asi hasta 40.png
-	sprites = [cargar_textura(r) for r in ruta_fondo]
-	
-	# Activar texturas
-	glEnable(GL_TEXTURE_2D)
-	
-	# Activar transparencia en PNGs
-	glEnable(GL_BLEND)
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-	
-	# Variables del sprite
-	frame = 0
-	velocidad_anim = 0.12
-	ultimo_tiempo = time.time()
-	
-	# Posición del sprite
-	x = 0.0
-	y = 0.0
-	velocidad = 0.03
-
-def cargar_mc():    # Carga los sprites de animacion del "Main Character" mientras cae en picada, estaa nimacion se repite hasta un game over.
-    # Cargar Personaje Principale
-
-    ruta_mc = []
-    for i in range(1, 41):
-        ruta = "~/Programacion/Python/juegoPython/images/pato/" + {i} + ".png"
-        ruta_mc[i] = ruta
-        fondo = cargar_textura(ruta_mc[i])
-    # Hay 40 imagenes en .../images/pato que se llaman 1.png, 2.png, 3.png y asi hasta 40.png
-    sprites = [cargar_textura(r) for r in ruta_mc]
+def cargar_sprites_base(ruta_base_dir, num_imagenes):
+    """ Función auxiliar para cargar una secuencia de sprites numerados 1.png a N.png. """
+    ruta_base = os.path.join(os.path.expanduser('~'), ruta_base_dir)
+    rutas = []
     
-    # Activar texturas
-    glEnable(GL_TEXTURE_2D)
+    for i in range(1, num_imagenes + 1):
+        # Utilizando f-string para construir la ruta (e.g., .../cielo/1.png)
+        ruta_completa = os.path.join(ruta_base, f"{i}.png")
+        rutas.append(ruta_completa)
+        
+    sprites = [cargar_textura(r) for r in rutas]
     
-    # Activar transparencia en PNGs
-    glEnable(GL_BLEND)
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    
-    # Variables del sprite
+    # Inicialización de variables de posición/animación
     frame = 0 
     velocidad_anim = 0.12
     ultimo_tiempo = time.time()
-    
-    # Posición del sprite
     x = 0.0 
     y = 0.0 
-    velocidad = 0.03 
-
-def cargar_mc_principio():      # Carga los sprites de animacion del "Main Character" en la que pasa de estar descanzando en una nube a empezar a caer.
-                                # Esta animacion solo ocurre al principio del juego y no se vuelve a repetir.
-    for i in range(1, 26):
-        ruta[i] = "~/Programacion/Python/juegoPython/images/pato_acostado/" + {i} + ".png"
-        fondo = cargar_textura(ruta_mc[i])
-    # Hay 25 imagenes en .../images/pato_acostado que se llaman 1.png, 2.png, 3.png y asi hasta 25.png
-    sprites = [cargar_textura(r) for r in ruta_mc]
+    velocidad = 0.03
     
-    # Activar texturas
-    glEnable(GL_TEXTURE_2D)
-    
-    # Activar transparencia en PNGs
-    glEnable(GL_BLEND)
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    
-    # Variables del sprite
-    frame = 0 
-    velocidad_anim = 0.12
-    ultimo_tiempo = time.time()
-    
-    # Posición del sprite
-    x = 0.0 
-    y = 0.0 
-    velocidad = 0.03 
-
-def cargar_pantano_1():      # Carga los sprites de animacion del "pantano". Esta animacion solo aparecera al final del juego si es que el usuario logro ganar.
-    ruta = []
-    while os.path_exists("~/Programacion/Python/juegoPython/images/pantano_1/" + {i} + ".png"):
-        ruta[i] = "~/Programacion/Python/juegoPython/images/pantano_1/" + {i} + ".png"
-        fondo = cargar_textura(ruta[i])
-    sprites = [cargar_textura(r) for r in ruta]
-    
-    # Activar texturas
-    glEnable(GL_TEXTURE_2D)
-    
-    # Activar transparencia en PNGs
-    glEnable(GL_BLEND)
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    
-    # Variables del sprite
-    frame = 0 
-    velocidad_anim = 0.12
-    ultimo_tiempo = time.time()
-    
-    # Posición del sprite
-    x = 0.0 
-    y = 0.0 
-    velocidad = 0.03 
-
-def cargar_pantano_2():     # Carga los sprites de animacion del "pantano". Esta animacion solo aparecera al final del juego si es que el usuario logro ganar.
-                            # Esta es la segunda parte de la animacion "cargar_pantano_1". 
-    ruta = []
-    while os.path_exists("~/Programacion/Python/juegoPython/images/pantano_2/" + {i} + ".png"):
-        ruta[i] = "~/Programacion/Python/juegoPython/images/pantano_2/" + {i} + ".png"
-        fondo = cargar_textura(ruta[i])
-    sprites = [cargar_textura(r) for r in ruta]
-    
-    # Activar texturas
-    glEnable(GL_TEXTURE_2D)
-    
-    # Activar transparencia en PNGs
-    glEnable(GL_BLEND)
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    
-    # Variables del sprite
-    frame = 0 
-    velocidad_anim = 0.12
-    ultimo_tiempo = time.time()
-    
-    # Posición del sprite
-    x = 0.0 
-    y = 0.0 
-    velocidad = 0.03 
-
-def cargar_avion():      # Carga los sprites de animacion de una vioneta que simula atropellar al pato. Quedandose desplumado y empezando a caer (inicio del juego).
-                                # Esta animacion solo ocurre al principio del juego y no se vuelve a repetir.
-    ruta_mc = []
-    for i in range(1, 170):
-        ruta = "~/Programacion/Python/juegoPython/images/avion/" + {i} + ".png"
-        ruta_avion[i] = ruta
-        fondo = cargar_textura(ruta_avion[i])
-    # Hay 169 imagenes en .../images/avion que se llaman 1.png, 2.png, 3.png y asi hasta 169.png
-    sprites = [cargar_textura(r) for r in ruta_avion]
-    
-    # Activar texturas
-    glEnable(GL_TEXTURE_2D)
-    
-    # Activar transparencia en PNGs
-    glEnable(GL_BLEND)
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    
-    # Variables del sprite
-    frame = 0 
-    velocidad_anim = 0.12
-    ultimo_tiempo = time.time()
-    
-    # Posición del sprite
-    x = 0.0 
-    y = 0.0 
-    velocidad = 0.03 
-
-def cargar_globo_a():      # Carga los sprites de animacion del un globo aerostatico, este objeto le hara danio al pato.
-    # Hay 98 imagenes en .../images/globo_a que se llaman 1.png, 2.png, 3.png y asi hasta 98.png
-    i = 1
-    while os.path.exists("~/Programacion/Python/juegoPython/images/globo_a/" + {i} + ".png"):
-        ruta[i] = "~/Programacion/Python/juegoPython/images/globo_a/" + {i} + ".png" 
-        fondo = cargar_textura(ruta[i])
-        i += 1
-
-    sprites = [cargar_textura(r) for r in ruta]
-    
-    # Activar texturas
-    glEnable(GL_TEXTURE_2D)
-    
-    # Activar transparencia en PNGs
-    glEnable(GL_BLEND)
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    
-    # Variables del sprite
-    frame = 0 
-    velocidad_anim = 0.12
-    ultimo_tiempo = time.time()
-    
-    # Posición del sprite
-    x = 0.0 
-    y = 0.0 
-    velocidad = 0.03 
-
-def cargar_globo_m():      # Carga los sprites de animacion del un globo metorologico, este objeto le hara danio al pato.
-    # Hay 40 imagenes en .../images/globo_m que se llaman 1.png, 2.png, 3.png y asi hasta 40.png
-    i = 1
-    while os.path.exists("~/Programacion/Python/juegoPython/images/globo_m/" + {i} + ".png"):
-        ruta[i] = "~/Programacion/Python/juegoPython/images/globo_m/" + {i} + ".png" 
-        fondo = cargar_textura(ruta[i])
-        i += 1
-
-    sprites = [cargar_textura(r) for r in ruta]
-    
-    # Activar texturas
-    glEnable(GL_TEXTURE_2D)
-    
-    # Activar transparencia en PNGs
-    glEnable(GL_BLEND)
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    
-    # Variables del sprite
-    frame = 0 
-    velocidad_anim = 0.12
-    ultimo_tiempo = time.time()
-    
-    # Posición del sprite
-    x = 0.0 
-    y = 0.0 
-    velocidad = 0.03 
-
-def cargar_power1():      # Carga los sprites de animacion de una llama azul.
-    # Hay 5 imagenes en .../images/power_azul que se llaman 1.png, 2.png, 3.png y asi hasta 5.png
-    i = 1
-    while os.path.exists("~/Programacion/Python/juegoPython/images/power_azul/" + {i} + ".png"):
-        ruta[i] = "~/Programacion/Python/juegoPython/images/power_azul/" + {i} + ".png" 
-        fondo = cargar_textura(ruta[i])
-        i += 1
-
-    sprites = [cargar_textura(r) for r in ruta]
-    
-    # Activar texturas
-    glEnable(GL_TEXTURE_2D)
-    
-    # Activar transparencia en PNGs
-    glEnable(GL_BLEND)
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    
-    # Variables del sprite
-    frame = 0 
-    velocidad_anim = 0.12
-    ultimo_tiempo = time.time()
-    
-    # Posición del sprite
-    x = 0.0 
-    y = 0.0 
-    velocidad = 0.03 
-
-def cargar_power2():      # Carga los sprites de animacion de una llama purpura/morada.
-    # Hay 5 imagenes en .../images/power_morado que se llaman 1.png, 2.png, 3.png y asi hasta 5.png
-    i = 1
-    while os.path.exists("~/Programacion/Python/juegoPython/images/power_morado/" + {i} + ".png"):
-        ruta[i] = "~/Programacion/Python/juegoPython/images/power_morado/" + {i} + ".png" 
-        fondo = cargar_textura(ruta[i])
-        i += 1
-
-    sprites = [cargar_textura(r) for r in ruta]
-    
-    # Activar texturas
-    glEnable(GL_TEXTURE_2D)
-    
-    # Activar transparencia en PNGs
-    glEnable(GL_BLEND)
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    
-    # Variables del sprite
-    frame = 0 
-    velocidad_anim = 0.12
-    ultimo_tiempo = time.time()
-    
-    # Posición del sprite
-    x = 0.0 
-    y = 0.0 
-    velocidad = 0.03 
-
-def cargar_power3():      # Carga los sprites de animacion de una llama rojo.
-    # Hay 5 imagenes en .../images/power_rojo que se llaman 1.png, 2.png, 3.png y asi hasta 5.png
-    i = 1
-    while os.path.exists("~/Programacion/Python/juegoPython/images/power_rojo/" + {i} + ".png"):
-        ruta[i] = "~/Programacion/Python/juegoPython/images/power_rojo/" + {i} + ".png" 
-        fondo = cargar_textura(ruta[i])
-        i += 1
-
-    sprites = [cargar_textura(r) for r in ruta]
-    
-    # Activar texturas
-    glEnable(GL_TEXTURE_2D)
-    
-    # Activar transparencia en PNGs
-    glEnable(GL_BLEND)
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    
-    # Variables del sprite
-    frame = 0 
-    velocidad_anim = 0.12
-    ultimo_tiempo = time.time()
-    
-    # Posición del sprite
-    x = 0.0 
-    y = 0.0 
-    velocidad = 0.03 
+    return sprites, x, y, velocidad, frame, velocidad_anim, ultimo_tiempo
 
 def dibujar_escena():
     """
@@ -416,9 +153,16 @@ def dibujar_poligono(x, y, w, h):
     glTexCoord2f(0, 1); glVertex2f(x - w, y + h)
     glEnd()
 
-# Función para cargar textura
 def cargar_textura(ruta):
-    imagen = Image.open(ruta).transpose(Image.FLIP_TOP_BOTTOM)
+    """ Función para cargar textura, expandiendo el '~' en la ruta. """
+    ruta_absoluta = os.path.expanduser(ruta)
+    
+    # Manejo de error si el archivo no existe
+    if not os.path.exists(ruta_absoluta):
+        print(f"ERROR: Archivo de textura no encontrado: {ruta_absoluta}")
+        return 0 # Devolver 0 (ID de textura inválido)
+        
+    imagen = Image.open(ruta_absoluta).transpose(Image.FLIP_TOP_BOTTOM)
     img_data = imagen.convert("RGBA").tobytes()
     width, height = imagen.size
 
@@ -432,6 +176,50 @@ def cargar_textura(ruta):
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
     return tex_id
+
+def cargar_fondo():
+    # Hay 40 imagenes en .../images/cielo que se llaman 1.png, 2.png, 3.png y asi hasta 40.png
+    return cargar_sprites_base("Programacion/Python/juegoPython/images/cielo", 40)
+
+def cargar_mc():    # Carga los sprites de animacion del "Main Character" mientras cae en picada.
+    # Hay 40 imagenes en .../images/pato que se llaman 1.png, 2.png, 3.png y asi hasta 40.png
+    return cargar_sprites_base("Programacion/Python/juegoPython/images/pato", 40)
+
+def cargar_mc_principio():
+    # Hay 25 imagenes en .../images/pato_acostado que se llaman 1.png, 2.png, 3.png y asi hasta 25.png
+    return cargar_sprites_base("Programacion/Python/juegoPython/images/pato_acostado", 25)
+
+def cargar_pantano_1():
+    # Se necesita saber cuántas imágenes hay en total. Asumo 10 como ejemplo.
+    return cargar_sprites_base("Programacion/Python/juegoPython/images/pantano_1", 10)
+
+def cargar_pantano_2():
+    # Se necesita saber cuántas imágenes hay en total. Asumo 10 como ejemplo.
+    return cargar_sprites_base("Programacion/Python/juegoPython/images/pantano_2", 10)
+
+def cargar_avion():
+    # Hay 169 imagenes en .../images/avion
+    return cargar_sprites_base("Programacion/Python/juegoPython/images/avion", 169)
+
+def cargar_globo_a():
+    # Hay 98 imagenes en .../images/globo_a
+    return cargar_sprites_base("Programacion/Python/juegoPython/images/globo_a", 98)
+
+def cargar_globo_m():
+    # Hay 40 imagenes en .../images/globo_m
+    return cargar_sprites_base("Programacion/Python/juegoPython/images/globo_m", 40)
+
+def cargar_power1():
+    # Hay 5 imagenes en .../images/power_azul
+    return cargar_sprites_base("Programacion/Python/juegoPython/images/power_azul", 5)
+
+def cargar_power2():
+    # Hay 5 imagenes en .../images/power_morado
+    return cargar_sprites_base("Programacion/Python/juegoPython/images/power_morado", 5)
+
+def cargar_power3():
+    # Hay 5 imagenes en .../images/power_rojo
+    return cargar_sprites_base("Programacion/Python/juegoPython/images/power_rojo", 5)
 
 # Esto lo debe de llevar ?????
 def programa_principal():
