@@ -4,6 +4,7 @@ import glfw
 from OpenGL.GL import *
 from OpenGL.GLU import *
 from OpenGL.GLUT import *       # <-- Aqui estamos importando la biblioteca GLUT FreeGLUT para las figuras precargadas.
+from carga import cargar_textura, dibujar_poligono, va_hacia_la_derecha
     
 giro1 = 0.5
 width_ = 100; height_ = 100; deep_ = 100
@@ -95,12 +96,15 @@ class Poligono():   # Todavia no es capaz de cargar un png sobre el poligono... 
         this.x = x
         this.y = y
         this.lado = lado
-        this.actualizar(x, y)
 
-        vx1 = this.x
-        vy1 = this.y
-        vx2 = this.x + this.lado
-        vy2 = this.y + this.lado    
+        # Cargamos los sprites del MC usando la función del módulo 'carga'.
+        sprites_data = carga.cargar_mc()
+        this.sprites = sprites_data[0]
+        this.frame = sprites_data[4]
+        this.velocidad_anim = sprites_data[5]
+        this.ultimo_tiempo = sprites_data[6]
+        
+        this.actualizar(x, y) # Inicializa la hitbox
 
     # METODOS
 
@@ -113,13 +117,36 @@ class Poligono():   # Todavia no es capaz de cargar un png sobre el poligono... 
         this.vx2 = this.x + this.lado
         this.vy2 = this.y + this.lado 
 
-    def dibujar(this, x, y, lado):
-        glBegin(GL_POLYGON)
-        glVertex2f(x, y)
-        glVertex2f(x + lado, y)
-        glVertex2f(x + lado, y + lado)
-        glVertex2f(x, y + lado)
-        glEnd()
+    def actualizar_animacion(this):
+        """ Actualiza el frame de animación basado en el tiempo. """
+        tiempo_actual = time.time()
+        if tiempo_actual - this.ultimo_tiempo > this.velocidad_anim:
+            this.frame = (this.frame + 1) % len(this.sprites)
+            this.ultimo_tiempo = tiempo_actual
+
+    def dibujar(this):
+        this.actualizar_animacion() # Actualiza el frame ANTES de dibujar
+        
+        # Como usaremos poligono probablente mas adelante sea necesario ajusatr el eje 'Z'.
+        glPushMatrix()
+        
+        glBindTexture(GL_TEXTURE_2D, this.sprites[this.frame])
+        
+        # Dibujar el quad con textura.
+        centro_x = this.x + (this.lado / 2)
+        centro_y = this.y + (this.lado / 2)
+        mitad = this.lado / 2 
+        
+        dibujar_poligono(centro_x, centro_y, mitad, mitad) 
+        
+        glPopMatrix()
+        
+#        glBegin(GL_POLYGON)
+#        glVertex2f(this.x, this.y)
+#        glVertex2f(this.x + this.lado, this.y)
+#        glVertex2f(this.x + this.lado, this.y + this.lado)
+#        glVertex2f(this.x, this.y + this.lado)
+#        glEnd()
 
     def colisionando_power1(this):  # Esta funcion llamara a sonidos u animaciones para una mejor exeriencia de juego.
         print("COLISION DETECTADA!")

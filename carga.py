@@ -43,7 +43,7 @@ def inicializar_pygame_sonido():
             return
         sonido_recarga = pygame.mixer.Sound(RUTA_RECARGA1)
 
-        # --- 2. CARGA Y REPRODUCCIÓN DE MÚSICA DE AMBIENTE1 (gestionado por mixer.music) ---
+        # Carga de la musica de fondo (TempleOS DnB remix lol)
         print(f"Buscando música de ambiente en: {RUTA_AMBIENTE1}")
         if not os.path.exists(RUTA_AMBIENTE1):
             print(f"ERROR: Música de ambiente no encontrada en: {RUTA_AMBIENTE1}")
@@ -71,39 +71,17 @@ def key_callback(window, key, scancode, action, mods):
 
         if key == glfw.KEY_SPACE:
             print("Tecla ESPACIO presionada. Reproduciendo sonido de disparo...")
-
             if sonido_disparo:
-                # Reproducir el sonido
                 sonido_disparo.play()
-            else:
-                print("Advertencia: El sonido no pudo ser cargado o inicializado.")
 
-        if key == glfw.KEY_R:
-            print("Tecla R presionada. Reproduciendo sonido de recarga del airma...")
-            sonido_recarga.play()
-        else:
-            print("Advertencia: El sonido no pudo ser cargado o inicializado.")
+        elif key == glfw.KEY_R:
+            print("Tecla R presionada. Reproduciendo sonido de recarga...")
+            if sonido_recarga:
+                sonido_recarga.play()
 
-        # Movimiento con teclas
-        if key == glfw.PRESS:
-            y += velocidad
-
-        if key == glfw.PRESS:
-            y -= velocidad
-
-        if key == glfw.PRESS:
-            x -= velocidad
-
-        if key == glfw.PRESS:
-            x += velocidad
-
-        if key == glfw.KEY_ESCAPE:
+        elif key == glfw.KEY_ESCAPE:
             print("Escape presionado - Cerrando ventana")
             glfw.set_window_should_close(window, True)
-
-        # Dibujar el sprite
-        glBindTexture(GL_TEXTURE_2D, sprites[frame])
-        dibujar_poligono(x, y, 0.15, 0.15)
 
 # ======================= CARGAR FONDOS ==========================
 
@@ -129,22 +107,6 @@ def cargar_sprites_base(ruta_base_dir, num_imagenes):
     
     return sprites, x, y, velocidad, frame, velocidad_anim, ultimo_tiempo
 
-def dibujar_escena():
-    """
-    Función de dibujo de la escena de OpenGL. Utiliza glBegin/glEnd.
-    """
-    # Establecer el color de fondo (negro)
-    glClearColor(0.0, 0.0, 0.0, 1.0)
-    glClear(GL_COLOR_BUFFER_BIT)
-
-    glBegin(GL_QUADS)
-    glColor3f(1.0, 1.0, 1.0)
-    glVertex2f(-0.2, 0.2)
-    glVertex2f( 0.2, 0.2)
-    glVertex2f( 0.2, -0.2)
-    glVertex2f(-0.2, -0.2)
-    glEnd()
-
 def dibujar_poligono(x, y, w, h):
     glBegin(GL_QUADS)
     glTexCoord2f(0, 0); glVertex2f(x - w, y - h)
@@ -154,7 +116,7 @@ def dibujar_poligono(x, y, w, h):
     glEnd()
 
 def cargar_textura(ruta):
-    """ Función para cargar textura, expandiendo el '~' en la ruta. """
+    # Función para cargar textura, expandiendo el '~' en la ruta.
     ruta_absoluta = os.path.expanduser(ruta)
     
     # Manejo de error si el archivo no existe
@@ -238,11 +200,36 @@ def programa_principal():
     # Registrar la función de callback de teclado
     glfw.set_key_callback(ventana, key_callback)
 
+    # cargar los sprites
+    sprites_mc, x, y, velocidad, frame, velocidad_anim, ultimo_tiempo = cargar_mc()
+
     # Bucle principal de renderizado
     while not glfw.window_should_close(ventana):
 
-        # Dibujar la escena
-        # dibujar_escena()
+        glClear(GL_COLOR_BUFFER_BIT)
+
+        # --- Lógica de animación y movimiento ---
+        
+        # Actualizar animación
+        tiempo_actual = time.time()
+        if tiempo_actual - ultimo_tiempo > velocidad_anim:
+            frame = (frame + 1) % len(sprites_mc)
+            ultimo_tiempo = tiempo_actual
+
+        # Movimiento (Debe ir aquí, usando glfw.get_key)
+        # Nota: La key_callback solo maneja los sonidos. Aquí manejas el movimiento.
+        if glfw.get_key(ventana, glfw.KEY_UP) == glfw.PRESS:
+            y += velocidad
+        if glfw.get_key(ventana, glfw.KEY_DOWN) == glfw.PRESS:
+            y -= velocidad
+        if glfw.get_key(ventana, glfw.KEY_LEFT) == glfw.PRESS:
+            x -= velocidad
+        if glfw.get_key(ventana, glfw.KEY_RIGHT) == glfw.PRESS:
+            x += velocidad
+
+        # Dibujar el sprite
+        glBindTexture(GL_TEXTURE_2D, sprites_mc[frame])
+        dibujar_poligono(x, y, 0.15, 0.15)
 
         # Intercambiar búferes para mostrar el resultado
         glfw.swap_buffers(ventana)
@@ -253,23 +240,5 @@ def programa_principal():
     # Terminar GLFW y Pygame Mixer
     pygame.mixer.quit()
     glfw.terminate()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
