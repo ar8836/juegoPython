@@ -5,7 +5,7 @@ import pygame
 import os
 
 # --- Configuración de Archivos y Directorios ---
-
+# Sonidos funcionales pero solo son temporales, despues los cambiare por otros
 RUTA_AMBIENTE1 = "/home/ariel/Programacion/Python/juegoPython/sounds/ambiente1.mp3"
 RUTA_DISPARO1 = "/home/ariel/Programacion/Python/juegoPython/sounds/disparo1.mp3"
 RUTA_RECARGA1 = "/home/ariel/Programacion/Python/juegoPython/sounds/recarga1.mp3"
@@ -120,8 +120,8 @@ def key_callback(window, key, scancode, action, mods):
         glBindTexture(GL_TEXTURE_2D, sprites[frame])
         dibujar_poligono(x, y, 0.15, 0.15)
 
-	# =======================
-def cargar_mc():
+# ======================= CARGAR FONDOS ==========================
+def cargar_fondo():
     # Cargar fondo
 
     ruta_fondo = []
@@ -129,12 +129,7 @@ def cargar_mc():
         ruta = "~/Programacion/Python/juegoPython/images/cielo/" + {i} + ".png"
         ruta_fondo[i] = ruta
         fondo = cargar_textura(ruta_fondo[i])
-
-    # Cargar 5 sprites (animación)	
-    # rutas = [
-	#     "/home/ariel/Programacion/Python/juegoPython/pngs/" + {i} + ".png",
-	# ]
-
+    # Hay 40 imagenes en .../images/cielo que se llaman 1.png, 2.png, 3.png y asi hasta 40.png
 	sprites = [cargar_textura(r) for r in ruta_fondo]
 	
 	# Activar texturas
@@ -154,6 +149,37 @@ def cargar_mc():
 	x = 0.0
 	y = 0.0
 	velocidad = 0.03
+
+def cargar_mc():    # Carga los sprites de animacion del "Main Character".
+    # Cargar Personaje Principale
+
+    ruta_fondo = []
+    for i in range(1, 41):
+        ruta = "~/Programacion/Python/juegoPython/images/cielo/" + {i} + ".png"
+        ruta_fondo[i] = ruta
+        fondo = cargar_textura(ruta_fondo[i])
+    # Hay 40 imagenes en .../images/cielo que se llaman 1.png, 2.png, 3.png y asi hasta 40.png
+    sprites = [cargar_textura(r) for r in ruta_fondo]
+    
+    # Activar texturas
+    glEnable(GL_TEXTURE_2D)
+    
+    
+    # Activar transparencia en PNGs
+    glEnable(GL_BLEND)
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+    
+    # Variables del sprite
+    frame = 0 
+    velocidad_anim = 0.12
+    ultimo_tiempo = time.time()
+    
+    # Posición del sprite
+    x = 0.0 
+    y = 0.0 
+    velocidad = 0.03 
+
+
 
 def dibujar_escena():
     """
@@ -196,6 +222,7 @@ def cargar_textura(ruta):
 
     return tex_id
 
+# Esto lo debe de llevar ?????
 def programa_principal():
 
     # Inicializar Pygame Mixer y cargar el sonido
@@ -229,9 +256,6 @@ def programa_principal():
     glfw.terminate()
 
 
-# Llamado al programa principal de control
-if __name__ == "__main__":
-    programa_principal()
 
 
 
